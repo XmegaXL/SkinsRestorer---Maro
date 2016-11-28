@@ -6,9 +6,6 @@ import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
-
 import net.minecraft.server.v1_8_R1.EntityPlayer;
 import net.minecraft.server.v1_8_R1.EnumGamemode;
 import net.minecraft.server.v1_8_R1.EnumPlayerInfoAction;
@@ -21,16 +18,7 @@ import net.minecraft.server.v1_8_R1.PacketPlayOutRespawn;
 import net.minecraft.server.v1_8_R1.PlayerConnection;
 import skinsrestorer.bukkit.SkinsRestorer;
 
-public class SkinFactory_v1_8_R1 implements SkinFactory {
-
-	@Override
-	public void applySkin(Player p, Object props, Object propertymap) {
-		if (propertymap != null) {
-			PropertyMap propmap = (PropertyMap) propertymap;
-			propmap.get("textures").clear();
-			propmap.put("textures", (Property) props);
-		}
-	}
+public class SkinFactory_v1_8_R1 extends SkinFactory {
 
 	@SuppressWarnings("deprecation")
 	@Override

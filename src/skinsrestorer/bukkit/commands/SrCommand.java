@@ -75,6 +75,8 @@ public class SrCommand implements CommandExecutor {
 						}
 
 					SkinStorage.setPlayerSkin(p.getName(), skin);
+					SkinsRestorer.getInstance().getFactory().applySkin(p,
+							SkinStorage.getOrCreateSkinForPlayer(p.getName()));
 					SkinsRestorer.getInstance().getFactory().updateSkin(p);
 					sender.sendMessage(Locale.SKIN_CHANGE_SUCCESS);
 					return;

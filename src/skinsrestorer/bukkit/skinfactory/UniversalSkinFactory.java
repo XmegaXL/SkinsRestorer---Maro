@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import skinsrestorer.bukkit.SkinsRestorer;
 import skinsrestorer.shared.utils.ReflectionUtil;
 
-public class UniversalSkinFactory implements SkinFactory {
+public class UniversalSkinFactory extends SkinFactory {
 
 	private Class<?> PlayOutRespawn;
 	private Class<?> EntityHuman;
@@ -61,19 +61,6 @@ public class UniversalSkinFactory implements SkinFactory {
 			CHEST = ReflectionUtil.getEnum(ReflectionUtil.getNMSClass("EnumItemSlot"), "CHEST");
 			FEET = ReflectionUtil.getEnum(ReflectionUtil.getNMSClass("EnumItemSlot"), "FEET");
 			LEGS = ReflectionUtil.getEnum(ReflectionUtil.getNMSClass("EnumItemSlot"), "LEGS");
-		} catch (Exception e) {
-		}
-	}
-
-	@Override
-	public void applySkin(Player p, Object props, Object propertymap) {
-		try {
-			if (props != null && propertymap != null) {
-				ReflectionUtil.invokeMethod(propertymap, "clear");
-				ReflectionUtil.invokeMethod(propertymap.getClass(), propertymap, "put",
-						new Class[] { Object.class, Object.class }, new Object[] { "textures", props });
-			}
-
 		} catch (Exception e) {
 		}
 	}

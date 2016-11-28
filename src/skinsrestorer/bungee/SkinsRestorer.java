@@ -19,7 +19,6 @@ import net.md_5.bungee.api.plugin.Plugin;
 import skinsrestorer.bungee.commands.AdminCommands;
 import skinsrestorer.bungee.commands.PlayerCommands;
 import skinsrestorer.bungee.listeners.LoginListener;
-import skinsrestorer.bungee.listeners.MessageListener;
 import skinsrestorer.shared.storage.Config;
 import skinsrestorer.shared.storage.Locale;
 import skinsrestorer.shared.storage.SkinStorage;
@@ -51,14 +50,10 @@ public class SkinsRestorer extends Plugin {
 		else
 			SkinStorage.init(getDataFolder());
 
-		//Needed that, cause bungeecord throws "Illegal access exception otherwise.
-		this.getProxy().getPluginManager().registerListener(this, new LoginListener());
-		
-		
-		this.getProxy().getPluginManager().registerListener(this, new MessageListener());
-		this.getProxy().getPluginManager().registerCommand(this, new AdminCommands());
-		this.getProxy().getPluginManager().registerCommand(this, new PlayerCommands());
-		this.getProxy().registerChannel("SkinsRestorer");
+		getProxy().getPluginManager().registerListener(this, new LoginListener());
+		getProxy().getPluginManager().registerCommand(this, new AdminCommands());
+		getProxy().getPluginManager().registerCommand(this, new PlayerCommands());
+		getProxy().registerChannel("SkinsRestorer");
 
 		multibungee = Config.MULTIBUNGEE_ENABLED
 				|| ProxyServer.getInstance().getPluginManager().getPlugin("RedisBungee") != null;

@@ -18,20 +18,9 @@ import net.minecraft.server.v1_7_R4.PacketPlayOutPosition;
 import net.minecraft.server.v1_7_R4.PacketPlayOutRespawn;
 import net.minecraft.server.v1_7_R4.PlayerConnection;
 import net.minecraft.server.v1_7_R4.WorldServer;
-import net.minecraft.util.com.mojang.authlib.properties.Property;
-import net.minecraft.util.com.mojang.authlib.properties.PropertyMap;
 import skinsrestorer.bukkit.SkinsRestorer;
 
-public class SkinFactory_v1_7_R4 implements SkinFactory {
-
-	@Override
-	public void applySkin(Player p, Object props, Object propertymap) {
-		if (propertymap != null) {
-			PropertyMap propmap = (PropertyMap) propertymap;
-			propmap.get("textures").clear();
-			propmap.put("textures", (Property) props);
-		}
-	}
+public class SkinFactory_v1_7_R4 extends SkinFactory {
 
 	@SuppressWarnings("deprecation")
 	@Override

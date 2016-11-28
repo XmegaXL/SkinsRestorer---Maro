@@ -4,30 +4,26 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import skinsrestorer.bukkit.commands.SkinCommand;
 import skinsrestorer.bukkit.commands.SrCommand;
-import skinsrestorer.bukkit.packet.PacketListener;
-import skinsrestorer.bukkit.packet.PacketListener17;
 import skinsrestorer.bukkit.skinfactory.SkinFactory;
 import skinsrestorer.bukkit.skinfactory.UniversalSkinFactory;
 import skinsrestorer.shared.storage.Config;
@@ -47,20 +43,11 @@ public class SkinsRestorer extends JavaPlugin {
 	private MySQL mysql;
 	private boolean bungeeEnabled;
 	private boolean outdated;
-	private boolean deprecated;
 
 	@Override
 	public void onEnable() {
 		instance = this;
 		final ConsoleCommandSender console = Bukkit.getConsoleSender();
-		deprecated = ReflectionUtil.serverVersion.contains("1_7");
-
-		if (deprecated)
-			for (Player p : Bukkit.getOnlinePlayers())
-				PacketListener17.inject(p);
-		else
-			for (Player p : Bukkit.getOnlinePlayers())
-				PacketListener.inject(p);
 
 		try {
 			Class.forName("net.minecraftforge.cauldron.CauldronHooks");
@@ -85,6 +72,20 @@ public class SkinsRestorer extends JavaPlugin {
 		} catch (Exception e) {
 			bungeeEnabled = false;
 		}
+		
+		getCommand("skinver").setExecutor(new CommandExecutor(){
+
+			@Override
+			public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] arg3) {
+				sender.sendMessage(C.c("&8This server is kindly running &aSkinsRestorer &e"
+						+ SkinsRestorer.getInstance().getVersion() + "&8, made with love by &d"
+						+ SkinsRestorer.getInstance().getDescription().getAuthors().get(0) + " &8and &c"
+						+ SkinsRestorer.getInstance().getDescription().getAuthors().get(1)
+						+ "&8, utilizing Minecraft &a" + ReflectionUtil.serverVersion + "&8."));
+				return false;
+			}
+			
+		});
 
 		if (bungeeEnabled) {
 
@@ -107,15 +108,8 @@ public class SkinsRestorer extends JavaPlugin {
 
 								if (subchannel.equalsIgnoreCase("SkinUpdate")) {
 									try {
-										Object textures = SkinStorage.createProperty(in.readUTF(), in.readUTF(),
-												in.readUTF());
-
-										Object ep = ReflectionUtil.invokeMethod(player.getClass(), player, "getHandle");
-										Object profile = ReflectionUtil.invokeMethod(ep.getClass(), ep, "getProfile");
-										Object propmap = ReflectionUtil.invokeMethod(profile.getClass(), profile,
-												"getProperties");
-
-										factory.applySkin(player, textures, propmap);
+										factory.applySkin(player,
+												SkinStorage.createProperty(in.readUTF(), in.readUTF(), in.readUTF()));
 									} catch (Exception e) {
 									}
 									factory.updateSkin(player);
@@ -127,19 +121,6 @@ public class SkinsRestorer extends JavaPlugin {
 					});
 				}
 			});
-
-			Bukkit.getPluginManager().registerEvents(new Listener() {
-
-				@EventHandler(priority = EventPriority.LOWEST)
-				public void onJoin(PlayerJoinEvent e) {
-					if (ReflectionUtil.serverVersion.contains("1_7"))
-						PacketListener17.inject(e.getPlayer());
-					else
-						PacketListener.inject(e.getPlayer());
-
-				}
-
-			}, this);
 
 			if (Config.UPDATER_ENABLED) {
 				if (checkVersion().equals(getVersion())) {
@@ -188,18 +169,15 @@ public class SkinsRestorer extends JavaPlugin {
 		getCommand("skin").setExecutor(new SkinCommand());
 
 		Bukkit.getPluginManager().registerEvents(new Listener() {
-			@EventHandler(priority = EventPriority.HIGHEST)
-			public void onJoin(final PlayerJoinEvent e) {
-				final Player p = e.getPlayer();
-
-				if (deprecated)
-					PacketListener17.inject(p);
-				else
-					PacketListener.inject(p);
-
-				if (Config.UPDATER_ENABLED && SkinsRestorer.getInstance().isOutdated()
-						&& (p.isOp() || p.hasPermission("skinsrestorer.cmds")))
-					p.sendMessage(C.c(Locale.OUTDATED));
+						
+			// LoginEvent happens on attemptLogin so its the best place to set
+			// the skin
+			@EventHandler
+			public void onLogin(PlayerLoginEvent e){
+				try {
+					factory.applySkin(e.getPlayer(), SkinStorage.getOrCreateSkinForPlayer(e.getPlayer().getName()));
+				} catch (Exception ex) {
+				}
 			}
 		}, this);
 
@@ -244,38 +222,14 @@ public class SkinsRestorer extends JavaPlugin {
 										ChatColor.RED + "Default Skin '" + skin + "' request error: " + e.getReason());
 						}
 					}
-
-				// For my testing, do not touch
-				/*
-				 * try { AuthSession as = MojangAuthAPI.authenticate("username",
-				 * "password");
-				 * 
-				 * System.out.println(MojangAuthAPI.uploadSkin(as.getId(),
-				 * as.getAuthToken(), true)); } catch (Exception e) { }
-				 */
 			}
 
 		});
 
 	}
 
-	@Override
-	public void onDisable() {
-		if (deprecated)
-			for (Player p : Bukkit.getOnlinePlayers())
-				PacketListener17.uninject(p);
-		else
-			for (Player p : Bukkit.getOnlinePlayers())
-				PacketListener.uninject(p);
-
-	}
-
 	public static SkinsRestorer getInstance() {
 		return instance;
-	}
-
-	public boolean isDeprecated() {
-		return outdated;
 	}
 
 	public boolean isOutdated() {
@@ -311,23 +265,6 @@ public class SkinsRestorer extends JavaPlugin {
 
 	public MySQL getMySQL() {
 		return mysql;
-	}
-
-	public boolean downloadUpdate() {
-		try {
-			InputStream in = new URL("http://api.spiget.org/v1/resources/2124/download").openStream();
-
-			System.out.println(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-
-			Path target = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).toPath();
-
-			Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
-
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 }

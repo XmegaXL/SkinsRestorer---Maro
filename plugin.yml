@@ -1,7 +1,6 @@
 name: SkinsRestorer
 main: skinsrestorer.bukkit.SkinsRestorer
-load: STARTUP
-version: 12.9.4
+version: 12.9.5
 authors: [Blackfire62, Th3Tr0LLeR]
 commands:
   skinsrestorer:
@@ -13,3 +12,5 @@ commands:
     description: Removes your skin.
   skins:
     description: Opens the skins menu.
+  skinver:
+    description: Shows the SR version

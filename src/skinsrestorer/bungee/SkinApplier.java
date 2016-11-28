@@ -2,7 +2,6 @@ package skinsrestorer.bungee;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -57,9 +56,6 @@ public class SkinApplier {
 	}
 
 	private static void sendUpdateRequest(ProxiedPlayer p, Property textures) {
-		if (p == null || !p.isConnected() || p.getServer() == null || !p.getServer().isConnected())
-			return;
-
 		ByteArrayOutputStream b = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(b);
 		try {
@@ -72,8 +68,7 @@ public class SkinApplier {
 			}
 
 			p.getServer().sendData("SkinsRestorer", b.toByteArray());
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
 		}
 	}
 
