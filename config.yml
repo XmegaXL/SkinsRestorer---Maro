@@ -9,7 +9,7 @@ SkinChangeCooldown: 30
 #If more nicknames will be in the list, server will
 #always choose a random one
 DefaultSkins:
-  Enabled: false
+  Enabled: true
   Names:
     - Steve
     
